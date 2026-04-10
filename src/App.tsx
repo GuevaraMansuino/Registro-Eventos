@@ -6,9 +6,11 @@ import ParticipanteCard from './components/ParticipanteCard';
 
 function App() {
   // Estados para filtros
-  const [buscarNombre, setBuscarNombre] = useState('');
-  const [filtroModalidad, setFiltroModalidad] = useState('Todas');
-  const [filtroNivel, setFiltroNivel] = useState('Todos');
+  const [filtros, setFiltros] = useState({
+    nombre: '',
+    modalidad: 'Todas',
+    nivel: 'Todos'
+  });
 
   // Estado para participantes
   const [participantes, setParticipantes] = useState<Participante[]>([]);
@@ -42,9 +44,11 @@ function App() {
 
   // Limpiar filtros
   const handleLimpiarFiltros = () => {
-    setBuscarNombre('');
-    setFiltroModalidad('Todas');
-    setFiltroNivel('Todos');
+    setFiltros({
+      nombre: '',
+      modalidad: 'Todas',
+      nivel: 'Todos'
+    });
   };
 
   // Resetear datos
@@ -55,9 +59,9 @@ function App() {
 
   // Filtrar participantes combinados (AND lógico)
   const participantesFiltrados = participantes.filter((p) => {
-    const cumpleNombre = p.nombre.toLowerCase().includes(buscarNombre.toLowerCase());
-    const cumpleModalidad = filtroModalidad === 'Todas' || p.modalidad === filtroModalidad;
-    const cumpleNivel = filtroNivel === 'Todos' || p.nivel === filtroNivel;
+    const cumpleNombre = p.nombre.toLowerCase().includes(filtros.nombre.toLowerCase());
+    const cumpleModalidad = filtros.modalidad === 'Todas' || p.modalidad === filtros.modalidad;
+    const cumpleNivel = filtros.nivel === 'Todos' || p.nivel === filtros.nivel;
     return cumpleNombre && cumpleModalidad && cumpleNivel;
   });
 
@@ -80,7 +84,7 @@ function App() {
         {/* Contador de participantes dinámico */}
         <div className="text-center mb-6">
           <p className="text-lg font-semibold text-gray-800 bg-white inline-block px-6 py-2 rounded-full shadow-md">
-            Mostrando <span className="text-blue-600">{participantesFiltrados.length}</span> de <span className="text-purple-600">{participantes.length}</span> participantes
+            Mostrando {participantesFiltrados.length} de {participantes.length} participantes
           </p>
         </div>
 
@@ -89,12 +93,8 @@ function App() {
 
         {/* SECCIÓN 2: FILTROS DE BÚSQUEDA */}
         <Filtros
-          buscarNombre={buscarNombre}
-          setBuscarNombre={setBuscarNombre}
-          filtroModalidad={filtroModalidad}
-          setFiltroModalidad={setFiltroModalidad}
-          filtroNivel={filtroNivel}
-          setFiltroNivel={setFiltroNivel}
+          filtros={filtros}
+          setFiltros={setFiltros}
           onLimpiarFiltros={handleLimpiarFiltros}
         />
 

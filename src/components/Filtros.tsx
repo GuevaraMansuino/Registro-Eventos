@@ -1,22 +1,22 @@
 import React from 'react';
 
 interface FiltrosProps {
-  buscarNombre: string;
-  setBuscarNombre: (valor: string) => void;
-  filtroModalidad: string;
-  setFiltroModalidad: (valor: string) => void;
-  filtroNivel: string;
-  setFiltroNivel: (valor: string) => void;
+  filtros: {
+    nombre: string;
+    modalidad: string;
+    nivel: string;
+  };
+  setFiltros: React.Dispatch<React.SetStateAction<{
+    nombre: string;
+    modalidad: string;
+    nivel: string;
+  }>>;
   onLimpiarFiltros: () => void;
 }
 
 const Filtros: React.FC<FiltrosProps> = ({
-  buscarNombre,
-  setBuscarNombre,
-  filtroModalidad,
-  setFiltroModalidad,
-  filtroNivel,
-  setFiltroNivel,
+  filtros,
+  setFiltros,
   onLimpiarFiltros,
 }) => {
   return (
@@ -41,8 +41,8 @@ const Filtros: React.FC<FiltrosProps> = ({
           </label>
           <input
             type="text"
-            value={buscarNombre}
-            onChange={(e) => setBuscarNombre(e.target.value)}
+            value={filtros.nombre}
+            onChange={(e) => setFiltros({ ...filtros, nombre: e.target.value })}
             placeholder="Buscar..."
             className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           />
@@ -54,8 +54,8 @@ const Filtros: React.FC<FiltrosProps> = ({
             Filtrar por modalidad
           </label>
           <select
-            value={filtroModalidad}
-            onChange={(e) => setFiltroModalidad(e.target.value)}
+            value={filtros.modalidad}
+            onChange={(e) => setFiltros({ ...filtros, modalidad: e.target.value })}
             className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white"
           >
             <option value="Todas">Todas</option>
@@ -71,8 +71,8 @@ const Filtros: React.FC<FiltrosProps> = ({
             Filtrar por nivel
           </label>
           <select
-            value={filtroNivel}
-            onChange={(e) => setFiltroNivel(e.target.value)}
+            value={filtros.nivel}
+            onChange={(e) => setFiltros({ ...filtros, nivel: e.target.value })}
             className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white"
           >
             <option value="Todos">Todos</option>
