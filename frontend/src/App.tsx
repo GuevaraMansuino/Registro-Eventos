@@ -1,46 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Participante } from './models/Participante';
+import { useState, useContext } from 'react';
+import { ParticipantesContext } from './context/ParticipantesContext';
 import Formulario from './components/Formulario';
 import Filtros from './components/Filtros';
 import ParticipanteCard from './components/ParticipanteCard';
 
 function App() {
+  // Contexto
+  const ctx = useContext(ParticipantesContext);
+  if (!ctx) throw new Error('App debe estar dentro de ParticipantesProvider');
+  
+  const { participantes, resetear } = ctx;
+
   // Estados para filtros
   const [filtros, setFiltros] = useState({
     nombre: '',
     modalidad: 'Todas',
     nivel: 'Todos'
   });
-
-  // Estado para participantes
-  const [participantes, setParticipantes] = useState<Participante[]>([]);
-  const [cargado, setCargado] = useState(false);
-
-  // Cargar desde LocalStorage al iniciar
-  useEffect(() => {
-    const participantesGuardados = localStorage.getItem('participantes');
-    if (participantesGuardados) {
-      setParticipantes(JSON.parse(participantesGuardados));
-    }
-    setCargado(true);
-  }, []);
-
-  // Guardar en LocalStorage cuando cambian los participantes (excepto en la carga inicial)
-  useEffect(() => {
-    if (cargado) {
-      localStorage.setItem('participantes', JSON.stringify(participantes));
-    }
-  }, [participantes, cargado]);
-
-  // Agregar nuevo participante
-  const handleAgregarParticipante = (nuevoParticipante: Participante) => {
-    setParticipantes([...participantes, nuevoParticipante]);
-  };
-
-  // Eliminar participante
-  const handleEliminar = (id: number) => {
-    setParticipantes(participantes.filter((p) => p.id !== id));
-  };
 
   // Limpiar filtros
   const handleLimpiarFiltros = () => {
@@ -49,12 +25,6 @@ function App() {
       modalidad: 'Todas',
       nivel: 'Todos'
     });
-  };
-
-  // Resetear datos
-  const handleResetearDatos = () => {
-    localStorage.removeItem('participantes');
-    setParticipantes([]);
   };
 
   // Filtrar participantes combinados (AND lógico)
@@ -74,22 +44,17 @@ function App() {
             Registro de Participantes
           </h1>
           <button
-            onClick={handleResetearDatos}
+            onClick={resetear}
             className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-semibold border border-red-300 shadow-sm"
           >
             ⚠️ Resetear datos
           </button>
         </div>
 
-        {/* Contador de participantes dinámico */}
-        <div className="text-center mb-6">
-          <p className="text-lg font-semibold text-gray-800 bg-white inline-block px-6 py-2 rounded-full shadow-md">
-            Mostrando {participantesFiltrados.length} de {participantes.length} participantes
-          </p>
-        </div>
+
 
         {/* SECCIÓN 1: FORMULARIO DE INSCRIPCIÓN */}
-        <Formulario onAgregar={handleAgregarParticipante} />
+        <Formulario />
 
         {/* SECCIÓN 2: FILTROS DE BÚSQUEDA */}
         <Filtros
@@ -100,16 +65,21 @@ function App() {
 
         {/* SECCIÓN 3: LISTA DE PARTICIPANTES */}
         <div>
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-            <span className="text-blue-500">👥</span> Lista de participantes
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <span className="text-blue-500">👥</span> Lista de participantes
+            </h2>
+            {/* Contador de participantes dinámico */}
+            <p className="text-sm font-semibold text-gray-800 bg-white inline-block px-4 py-1.5 rounded-full shadow border border-gray-200">
+              Mostrando {participantesFiltrados.length} de {participantes.length} participantes
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {participantesFiltrados.map((participante) => (
               <ParticipanteCard
                 key={participante.id}
                 participante={participante}
-                onEliminar={handleEliminar}
               />
             ))}
           </div>

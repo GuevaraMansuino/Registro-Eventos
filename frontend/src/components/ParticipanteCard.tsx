@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Participante } from '../models/Participante';
+import { ParticipantesContext } from '../context/ParticipantesContext';
 
 interface ParticipanteCardProps {
   participante: Participante;
-  onEliminar: (id: number) => void;
 }
 
-const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante, onEliminar }) => {
+const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => {
+  const ctx = useContext(ParticipantesContext);
+  if (!ctx) throw new Error('ParticipanteCard debe estar dentro de ParticipantesProvider');
+  const { eliminar } = ctx;
+
   const getColorNivel = (nivel: string) => {
     switch (nivel) {
       case 'Principiante':
@@ -67,7 +71,7 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante, onEli
       </div>
 
       <button
-        onClick={() => onEliminar(participante.id)}
+        onClick={() => eliminar(participante.id)}
         className="mt-4 w-full bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold shadow hover:shadow-lg"
       >
         🗑️ Eliminar

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Participante } from '../models/Participante';
+import { ParticipantesContext } from '../context/ParticipantesContext';
 
-interface FormularioProps {
-  onAgregar: (participante: Participante) => void;
-}
+const Formulario: React.FC = () => {
+  const ctx = useContext(ParticipantesContext);
+  if (!ctx) throw new Error('Formulario debe estar dentro de ParticipantesProvider');
+  const { agregar } = ctx;
 
-const Formulario: React.FC<FormularioProps> = ({ onAgregar }) => {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [edad, setEdad] = useState<number | ''>('');
@@ -43,7 +44,7 @@ const Formulario: React.FC<FormularioProps> = ({ onAgregar }) => {
       aceptaTerminos
     );
 
-    onAgregar(nuevoParticipante);
+    agregar(nuevoParticipante);
 
     // Limpiar formulario
     setNombre('');
