@@ -9,7 +9,7 @@ function App() {
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('App debe estar dentro de ParticipantesProvider');
   
-  const { participantes, resetear } = ctx;
+  const { participantes, participanteEditando, resetearParticipantes } = ctx;
 
   // Estados para filtros
   const [filtros, setFiltros] = useState({
@@ -44,7 +44,7 @@ function App() {
             Registro de Participantes
           </h1>
           <button
-            onClick={resetear}
+            onClick={resetearParticipantes}
             className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-semibold border border-red-300 shadow-sm"
           >
             ⚠️ Resetear datos
@@ -54,7 +54,7 @@ function App() {
 
 
         {/* SECCIÓN 1: FORMULARIO DE INSCRIPCIÓN */}
-        <Formulario />
+        <Formulario key={participanteEditando ? `edit-${participanteEditando.id}` : 'nuevo'} />
 
         {/* SECCIÓN 2: FILTROS DE BÚSQUEDA */}
         <Filtros

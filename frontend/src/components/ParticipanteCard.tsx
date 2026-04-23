@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Participante } from '../models/Participante';
+import type { Participante } from '../models/Participante';
 import { ParticipantesContext } from '../context/ParticipantesContext';
 
 interface ParticipanteCardProps {
@@ -9,7 +9,7 @@ interface ParticipanteCardProps {
 const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => {
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('ParticipanteCard debe estar dentro de ParticipantesProvider');
-  const { eliminar } = ctx;
+  const { eliminarParticipante, editarParticipante } = ctx;
 
   const getColorNivel = (nivel: string) => {
     switch (nivel) {
@@ -58,9 +58,9 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p className="font-semibold text-gray-700 mb-2">💻 Tecnologías:</p>
           <div className="flex flex-wrap gap-1">
-            {participante.tecnologias.map((tech, idx) => (
+            {participante.tecnologias.map((tech) => (
               <span
-                key={idx}
+                key={`${participante.id}-${tech}`}
                 className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium"
               >
                 {tech}
@@ -70,12 +70,20 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
         </div>
       </div>
 
-      <button
-        onClick={() => eliminar(participante.id)}
-        className="mt-4 w-full bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold shadow hover:shadow-lg"
-      >
-        🗑️ Eliminar
-      </button>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button
+          onClick={() => editarParticipante(participante)}
+          className="w-full bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition-all font-semibold shadow hover:shadow-lg"
+        >
+          Editar
+        </button>
+        <button
+          onClick={() => eliminarParticipante(participante.id)}
+          className="w-full bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold shadow hover:shadow-lg"
+        >
+          Eliminar
+        </button>
+      </div>
     </div>
   );
 };

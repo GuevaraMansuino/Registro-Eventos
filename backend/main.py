@@ -49,6 +49,29 @@ def create_participante(participante: models.ParticipanteCreate, db: Session = D
     db.refresh(db_participante)
     return db_participante
 
+@app.put("/participantes/{participante_id}", response_model=models.ParticipanteResponse)
+def update_participante(
+    participante_id: int,
+    participante: models.ParticipanteCreate,
+    db: Session = Depends(get_db)
+):
+    db_participante = db.query(models.ParticipanteDB).filter(models.ParticipanteDB.id == participante_id).first()
+    if not db_participante:
+        raise HTTPException(status_code=404, detail="Participante no encontrado")
+
+    db_participante.nombre = participante.nombre
+    db_participante.email = participante.email
+    db_participante.edad = participante.edad
+    db_participante.pais = participante.pais
+    db_participante.modalidad = participante.modalidad
+    db_participante.tecnologias = json.dumps(participante.tecnologias)
+    db_participante.nivel = participante.nivel
+    db_participante.aceptaTerminos = participante.aceptaTerminos
+
+    db.commit()
+    db.refresh(db_participante)
+    return db_participante
+
 @app.delete("/participantes/{participante_id}")
 def delete_participante(participante_id: int, db: Session = Depends(get_db)):
     db_participante = db.query(models.ParticipanteDB).filter(models.ParticipanteDB.id == participante_id).first()
