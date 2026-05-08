@@ -1,8 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import type { ParticipantePayload } from '../models/Participante';
 import { ParticipantesContext } from '../context/ParticipantesContext';
 
-const Formulario: React.FC = () => {
+interface FormularioProps {
+  onSuccess?: () => void;
+}
+
+const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('Formulario debe estar dentro de ParticipantesProvider');
   const { guardarParticipante, participanteEditando, cancelarEdicion } = ctx;
@@ -15,6 +19,17 @@ const Formulario: React.FC = () => {
   const [tecnologias, setTecnologias] = useState<string[]>(participanteEditando?.tecnologias ?? []);
   const [nivel, setNivel] = useState(participanteEditando?.nivel ?? '');
   const [aceptaTerminos, setAceptaTerminos] = useState(participanteEditando?.aceptaTerminos ?? false);
+
+  useEffect(() => {
+    setNombre(participanteEditando?.nombre ?? '');
+    setEmail(participanteEditando?.email ?? '');
+    setEdad(participanteEditando?.edad ?? '');
+    setPais(participanteEditando?.pais ?? '');
+    setModalidad(participanteEditando?.modalidad ?? 'Presencial');
+    setTecnologias(participanteEditando?.tecnologias ?? []);
+    setNivel(participanteEditando?.nivel ?? '');
+    setAceptaTerminos(participanteEditando?.aceptaTerminos ?? false);
+  }, [participanteEditando]);
 
   const limpiarFormulario = () => {
     setNombre('');
@@ -56,11 +71,13 @@ const Formulario: React.FC = () => {
 
     await guardarParticipante(payload);
     limpiarFormulario();
+    onSuccess?.();
   };
 
   const handleCancelarEdicion = () => {
     cancelarEdicion();
     limpiarFormulario();
+    onSuccess?.();
   };
 
   const textoBoton = participanteEditando ? 'Actualizar Participante' : 'Registrar Participante';

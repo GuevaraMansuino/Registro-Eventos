@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Participante } from '../models/Participante';
 import { ParticipantesContext } from '../context/ParticipantesContext';
 
@@ -7,6 +8,7 @@ interface ParticipanteCardProps {
 }
 
 const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => {
+  const navigate = useNavigate();
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('ParticipanteCard debe estar dentro de ParticipantesProvider');
   const { eliminarParticipante, editarParticipante } = ctx;
@@ -72,7 +74,10 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <button
-          onClick={() => editarParticipante(participante)}
+          onClick={() => {
+            editarParticipante(participante);
+            navigate(`/editar/${participante.id}`);
+          }}
           className="w-full bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition-all font-semibold shadow hover:shadow-lg"
         >
           Editar
