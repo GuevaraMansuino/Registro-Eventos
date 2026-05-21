@@ -1,0 +1,11 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Python (FastAPI/Flask) backend, React + TypeScript + Vite frontend
+  Styling: Tailwind CSS
+  State management: React Context + useReducer
+  Package manager: npm
+  We use conventional commits
+  Domain: Event registration system (Registro de Eventos) - manages participants, event registration, CRUD operations
+  Backend: Python with database models
+  Frontend: Vite + React + TypeScript + Tailwind CSS
