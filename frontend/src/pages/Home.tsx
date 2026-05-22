@@ -1,19 +1,29 @@
-import { useContext, useState } from 'react';
+import { useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Filtros from '../components/Filtros';
 import ParticipanteCard from '../components/ParticipanteCard';
 import { ParticipantesContext } from '../context/ParticipantesContext';
+import useKeyboardShortcut from '../hooks/useKeyboardShortcut';
+import useLocalStorage from '../hooks/useLocalStorage';
 
 function Home() {
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('Home debe estar dentro de ParticipantesProvider');
 
   const { participantes, resetearParticipantes } = ctx;
-  const [filtros, setFiltros] = useState({
+
+  // PARTE 3 — Custom Hook: useLocalStorage persiste los filtros entre sesiones
+  const [filtros, setFiltros] = useLocalStorage('registro-filtros', {
     nombre: '',
     modalidad: 'Todas',
     nivel: 'Todos',
   });
+
+  // PARTE 1 — useRef: referencia al input de búsqueda dentro de Filtros
+  const filtroRef = useRef<HTMLInputElement>(null);
+
+  // PARTE 3 — Custom Hook + PARTE 1 — useRef: Ctrl+B mueve el foco a los filtros
+  useKeyboardShortcut('b', () => filtroRef.current?.focus(), { ctrl: true });
 
   const handleLimpiarFiltros = () => {
     setFiltros({
@@ -50,10 +60,12 @@ function Home() {
         </div>
       </div>
 
+      {/* Filtros recibe la ref para soportar el foco con Ctrl+B */}
       <Filtros
         filtros={filtros}
         setFiltros={setFiltros}
         onLimpiarFiltros={handleLimpiarFiltros}
+        inputRef={filtroRef}
       />
 
       <div>
@@ -78,7 +90,9 @@ function Home() {
           </div>
         ) : participantesFiltrados.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow mt-4">
-            <p className="text-gray-500 text-lg">No hay participantes que coincidan con los filtros.</p>
+            <p className="text-gray-500 text-lg">
+              No hay participantes que coincidan con los filtros.
+            </p>
           </div>
         ) : null}
       </div>

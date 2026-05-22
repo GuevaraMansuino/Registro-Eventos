@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useId, useRef, useState } from 'react';
 import type { ParticipantePayload } from '../models/Participante';
 import { ParticipantesContext } from '../context/ParticipantesContext';
 
@@ -19,6 +19,22 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
   const [tecnologias, setTecnologias] = useState<string[]>(participanteEditando?.tecnologias ?? []);
   const [nivel, setNivel] = useState(participanteEditando?.nivel ?? '');
   const [aceptaTerminos, setAceptaTerminos] = useState(participanteEditando?.aceptaTerminos ?? false);
+
+  // PARTE 1 — useRef: foco automático al montar el formulario
+  const nombreRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    nombreRef.current?.focus();
+  }, []);
+
+  // PARTE 2 — useId: IDs únicos y accesibles para cada campo del formulario
+  const nombreId = useId();
+  const emailId = useId();
+  const edadId = useId();
+  const paisId = useId();
+  const modalidadId = useId();
+  const tecnologiasId = useId();
+  const nivelId = useId();
+  const aceptaTerminosId = useId();
 
   useEffect(() => {
     setNombre(participanteEditando?.nombre ?? '');
@@ -90,9 +106,14 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
 
       <form onSubmit={handleRegistrar}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nombre — useRef para autofocus + useId para accesibilidad */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Nombre</label>
+            <label htmlFor={nombreId} className="block text-sm font-semibold text-gray-700 mb-2">
+              Nombre
+            </label>
             <input
+              id={nombreId}
+              ref={nombreRef}
               type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
@@ -102,9 +123,13 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+            <label htmlFor={emailId} className="block text-sm font-semibold text-gray-700 mb-2">
+              Email
+            </label>
             <input
+              id={emailId}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -114,9 +139,13 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             />
           </div>
 
+          {/* Edad */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Edad</label>
+            <label htmlFor={edadId} className="block text-sm font-semibold text-gray-700 mb-2">
+              Edad
+            </label>
             <input
+              id={edadId}
               type="number"
               value={edad}
               onChange={(e) => setEdad(e.target.value === '' ? '' : Number(e.target.value))}
@@ -126,9 +155,13 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             />
           </div>
 
+          {/* País */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">País</label>
+            <label htmlFor={paisId} className="block text-sm font-semibold text-gray-700 mb-2">
+              País
+            </label>
             <select
+              id={paisId}
               value={pais}
               onChange={(e) => setPais(e.target.value)}
               className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
@@ -143,51 +176,42 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             </select>
           </div>
 
+          {/* Modalidad — radio buttons con useId */}
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-700 mb-3">Modalidad</label>
             <div className="flex gap-4 flex-wrap">
-              <label className="flex items-center bg-gray-50 px-4 py-2 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-all">
-                <input
-                  type="radio"
-                  value="Presencial"
-                  checked={modalidad === 'Presencial'}
-                  onChange={(e) => setModalidad(e.target.value)}
-                  className="mr-2 w-4 h-4 text-blue-600"
-                />
-                <span className="font-medium">Presencial</span>
-              </label>
-              <label className="flex items-center bg-gray-50 px-4 py-2 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-all">
-                <input
-                  type="radio"
-                  value="Virtual"
-                  checked={modalidad === 'Virtual'}
-                  onChange={(e) => setModalidad(e.target.value)}
-                  className="mr-2 w-4 h-4 text-blue-600"
-                />
-                <span className="font-medium">Virtual</span>
-              </label>
-              <label className="flex items-center bg-gray-50 px-4 py-2 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-all">
-                <input
-                  type="radio"
-                  value="Híbrido"
-                  checked={modalidad === 'Híbrido'}
-                  onChange={(e) => setModalidad(e.target.value)}
-                  className="mr-2 w-4 h-4 text-blue-600"
-                />
-                <span className="font-medium">Híbrido</span>
-              </label>
+              {(['Presencial', 'Virtual', 'Híbrido'] as const).map((opcion) => (
+                <label
+                  key={opcion}
+                  htmlFor={`${modalidadId}-${opcion}`}
+                  className="flex items-center bg-gray-50 px-4 py-2 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-all"
+                >
+                  <input
+                    id={`${modalidadId}-${opcion}`}
+                    type="radio"
+                    value={opcion}
+                    checked={modalidad === opcion}
+                    onChange={(e) => setModalidad(e.target.value)}
+                    className="mr-2 w-4 h-4 text-blue-600"
+                  />
+                  <span className="font-medium">{opcion}</span>
+                </label>
+              ))}
             </div>
           </div>
 
+          {/* Tecnologías — checkboxes con useId */}
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-700 mb-3">Tecnologías</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {['React', 'Angular', 'Vue', 'Node', 'Python', 'Java'].map((tech) => (
                 <label
                   key={tech}
+                  htmlFor={`${tecnologiasId}-${tech}`}
                   className="flex items-center bg-gray-50 px-3 py-2 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-400 transition-all"
                 >
                   <input
+                    id={`${tecnologiasId}-${tech}`}
                     type="checkbox"
                     checked={tecnologias.includes(tech)}
                     onChange={() => handleTecnologiaChange(tech)}
@@ -199,9 +223,13 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             </div>
           </div>
 
+          {/* Nivel */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Nivel</label>
+            <label htmlFor={nivelId} className="block text-sm font-semibold text-gray-700 mb-2">
+              Nivel
+            </label>
             <select
+              id={nivelId}
               value={nivel}
               onChange={(e) => setNivel(e.target.value)}
               className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
@@ -214,9 +242,14 @@ const Formulario: React.FC<FormularioProps> = ({ onSuccess }) => {
             </select>
           </div>
 
+          {/* Acepta Términos — checkbox con useId */}
           <div className="md:col-span-2">
-            <label className="flex items-center bg-blue-50 px-4 py-3 rounded-lg border-2 border-blue-200 cursor-pointer">
+            <label
+              htmlFor={aceptaTerminosId}
+              className="flex items-center bg-blue-50 px-4 py-3 rounded-lg border-2 border-blue-200 cursor-pointer"
+            >
               <input
+                id={aceptaTerminosId}
                 type="checkbox"
                 checked={aceptaTerminos}
                 onChange={(e) => setAceptaTerminos(e.target.checked)}

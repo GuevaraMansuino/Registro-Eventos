@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface FiltrosProps {
   filtros: {
@@ -6,24 +6,37 @@ interface FiltrosProps {
     modalidad: string;
     nivel: string;
   };
-  setFiltros: React.Dispatch<React.SetStateAction<{
-    nombre: string;
-    modalidad: string;
-    nivel: string;
-  }>>;
+  setFiltros: React.Dispatch<
+    React.SetStateAction<{
+      nombre: string;
+      modalidad: string;
+      nivel: string;
+    }>
+  >;
   onLimpiarFiltros: () => void;
+  // PARTE 1 — useRef: ref externa para mover el foco al input de nombre con Ctrl+B
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 const Filtros: React.FC<FiltrosProps> = ({
   filtros,
   setFiltros,
   onLimpiarFiltros,
+  inputRef,
 }) => {
+  // PARTE 2 — useId: IDs únicos para asociar labels con sus inputs de forma accesible
+  const buscarNombreId = useId();
+  const modalidadId = useId();
+  const nivelId = useId();
+
   return (
     <div className="bg-white shadow-xl rounded-lg p-6 mb-6 border border-gray-100">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <span className="text-purple-500">🔍</span> Filtros de búsqueda
+          <span className="text-xs font-normal text-gray-400 ml-2 hidden md:inline">
+            (Ctrl + B para enfocar)
+          </span>
         </h2>
         <button
           onClick={onLimpiarFiltros}
@@ -34,12 +47,17 @@ const Filtros: React.FC<FiltrosProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Buscar por nombre */}
+        {/* Buscar por nombre — recibe ref para foco por teclado */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor={buscarNombreId}
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Buscar por nombre
           </label>
           <input
+            id={buscarNombreId}
+            ref={inputRef}
             type="text"
             value={filtros.nombre}
             onChange={(e) => setFiltros({ ...filtros, nombre: e.target.value })}
@@ -50,10 +68,14 @@ const Filtros: React.FC<FiltrosProps> = ({
 
         {/* Filtrar por modalidad */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor={modalidadId}
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Filtrar por modalidad
           </label>
           <select
+            id={modalidadId}
             value={filtros.modalidad}
             onChange={(e) => setFiltros({ ...filtros, modalidad: e.target.value })}
             className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white"
@@ -67,10 +89,14 @@ const Filtros: React.FC<FiltrosProps> = ({
 
         {/* Filtrar por nivel */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor={nivelId}
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Filtrar por nivel
           </label>
           <select
+            id={nivelId}
             value={filtros.nivel}
             onChange={(e) => setFiltros({ ...filtros, nivel: e.target.value })}
             className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white"
