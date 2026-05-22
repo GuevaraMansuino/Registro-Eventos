@@ -6,15 +6,27 @@ import {
   initialParticipantesState,
   participantesReducer,
 } from '../reducers/participantesReducer';
+import { getToken } from '../utils/auth';
 
 const API_URL = 'http://127.0.0.1:8000/participantes';
+
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 export function ParticipantesProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(participantesReducer, initialParticipantesState);
 
   const cargarParticipantes = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        headers: authHeaders(),
+      });
       if (!response.ok) return;
       const data: Participante[] = await response.json();
       dispatch({ type: 'GET_PARTICIPANTES', payload: data });
@@ -35,7 +47,7 @@ export function ParticipantesProvider({ children }: { children: ReactNode }) {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(payload),
       });
 
@@ -59,7 +71,10 @@ export function ParticipantesProvider({ children }: { children: ReactNode }) {
 
   const eliminarParticipante = async (id: number) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
       if (!response.ok) return;
       dispatch({ type: 'ELIMINAR', payload: id });
     } catch (error) {
@@ -71,7 +86,9 @@ export function ParticipantesProvider({ children }: { children: ReactNode }) {
     try {
       await Promise.all(
         state.participantes.map((p) =>
-          fetch(`${API_URL}/${p.id}`, { method: 'DELETE' }).catch(() => null)
+          fetch(`${API_URL}/${p.id}`, { method: 'DELETE', headers: authHeaders() }).catch(
+            () => null
+          )
         )
       );
       dispatch({ type: 'RESET', payload: [] });

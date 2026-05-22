@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Filtros from '../components/Filtros';
 import ParticipanteCard from '../components/ParticipanteCard';
 import { ParticipantesContext } from '../context/ParticipantesContext';
+import { useAuth } from '../context/AuthProvider';
 import useKeyboardShortcut from '../hooks/useKeyboardShortcut';
 import useLocalStorage from '../hooks/useLocalStorage';
 
@@ -10,6 +11,7 @@ function Home() {
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('Home debe estar dentro de ParticipantesProvider');
 
+  const { user } = useAuth();
   const { participantes, resetearParticipantes } = ctx;
 
   // PARTE 3 — Custom Hook: useLocalStorage persiste los filtros entre sesiones
@@ -45,18 +47,22 @@ function Home() {
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-gray-800">Participantes</h1>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            to="/nuevo"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow"
-          >
-            Nuevo participante
-          </Link>
-          <button
-            onClick={resetearParticipantes}
-            className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-semibold border border-red-300 shadow-sm"
-          >
-            ⚠️ Resetear datos
-          </button>
+          {user?.rol === 'ADMIN' ? (
+            <>
+              <Link
+                to="/nuevo"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow"
+              >
+                Nuevo participante
+              </Link>
+              <button
+                onClick={resetearParticipantes}
+                className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-semibold border border-red-300 shadow-sm"
+              >
+                ⚠️ Resetear datos
+              </button>
+            </>
+          ) : null}
         </div>
       </div>
 

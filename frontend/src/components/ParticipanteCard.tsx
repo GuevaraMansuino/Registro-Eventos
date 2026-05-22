@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Participante } from '../models/Participante';
 import { ParticipantesContext } from '../context/ParticipantesContext';
+import { useAuth } from '../context/AuthProvider';
 
 interface ParticipanteCardProps {
   participante: Participante;
@@ -12,6 +13,7 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
   const ctx = useContext(ParticipantesContext);
   if (!ctx) throw new Error('ParticipanteCard debe estar dentro de ParticipantesProvider');
   const { eliminarParticipante, editarParticipante } = ctx;
+  const { user } = useAuth();
 
   const getColorNivel = (nivel: string) => {
     switch (nivel) {
@@ -72,23 +74,25 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => {
-            editarParticipante(participante);
-            navigate(`/editar/${participante.id}`);
-          }}
-          className="w-full bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition-all font-semibold shadow hover:shadow-lg"
-        >
-          Editar
-        </button>
-        <button
-          onClick={() => eliminarParticipante(participante.id)}
-          className="w-full bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold shadow hover:shadow-lg"
-        >
-          Eliminar
-        </button>
-      </div>
+      {user?.rol === 'ADMIN' ? (
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => {
+              editarParticipante(participante);
+              navigate(`/editar/${participante.id}`);
+            }}
+            className="w-full bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition-all font-semibold shadow hover:shadow-lg"
+          >
+            Editar
+          </button>
+          <button
+            onClick={() => eliminarParticipante(participante.id)}
+            className="w-full bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all font-semibold shadow hover:shadow-lg"
+          >
+            Eliminar
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };

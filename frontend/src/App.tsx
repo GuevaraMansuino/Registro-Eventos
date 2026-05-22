@@ -1,13 +1,26 @@
 import { useState } from 'react';
-import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthProvider';
+import PrivateRoute from './routes/PrivateRoute';
 import Home from './pages/Home';
 import FormularioPage from './pages/FormularioPage';
 import EditarPage from './pages/EditarPage';
+import LoginPage from './pages/LoginPage';
+import PublicaPage from './pages/PublicaPage';
 
 function App() {
+  const { isAuthenticated, user, logout } = useAuth();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const navigate = useNavigate();
 
   const cerrarMenu = () => setMenuAbierto(false);
+
+  const handleLogout = () => {
+    logout();
+    cerrarMenu();
+    navigate('/login', { replace: true });
+  };
+
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `px-4 py-2 rounded-lg font-semibold transition-all ${
       isActive
@@ -42,9 +55,20 @@ function App() {
               <NavLink to="/" className={linkClass}>
                 Participantes
               </NavLink>
-              <NavLink to="/nuevo" className={linkClass}>
-                Nuevo participante
-              </NavLink>
+              {user?.rol === 'ADMIN' ? (
+                <NavLink to="/nuevo" className={linkClass}>
+                  Nuevo participante
+                </NavLink>
+              ) : null}
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg font-semibold transition-all text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  Cerrar Sesión
+                </button>
+              ) : null}
             </div>
           </div>
 
@@ -53,9 +77,20 @@ function App() {
               <NavLink to="/" onClick={cerrarMenu} className={linkClass}>
                 Participantes
               </NavLink>
-              <NavLink to="/nuevo" onClick={cerrarMenu} className={linkClass}>
-                Nuevo participante
-              </NavLink>
+              {user?.rol === 'ADMIN' ? (
+                <NavLink to="/nuevo" onClick={cerrarMenu} className={linkClass}>
+                  Nuevo participante
+                </NavLink>
+              ) : null}
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-left px-4 py-2 rounded-lg font-semibold transition-all text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  Cerrar Sesión
+                </button>
+              ) : null}
             </div>
           ) : null}
         </nav>
@@ -63,9 +98,32 @@ function App() {
 
       <div className="max-w-6xl mx-auto p-6">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/nuevo" element={<FormularioPage />} />
-          <Route path="/editar/:id" element={<EditarPage />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/publica" element={<PublicaPage />} />
+          <Route
+            path="/nuevo"
+            element={
+              <PrivateRoute rol="ADMIN">
+                <FormularioPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/editar/:id"
+            element={
+              <PrivateRoute rol="ADMIN">
+                <EditarPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
     </div>

@@ -15,7 +15,7 @@ interface FiltrosProps {
   >;
   onLimpiarFiltros: () => void;
   // PARTE 1 — useRef: ref externa para mover el foco al input de nombre con Ctrl+B
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 const Filtros: React.FC<FiltrosProps> = ({
