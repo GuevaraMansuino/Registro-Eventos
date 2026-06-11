@@ -7,6 +7,10 @@ import FormularioPage from './pages/FormularioPage';
 import EditarPage from './pages/EditarPage';
 import LoginPage from './pages/LoginPage';
 import PublicaPage from './pages/PublicaPage';
+import CursosPage from './pages/CursosPage';
+import PagoSuccess from './pages/PagoSuccess';
+import PagoPending from './pages/PagoPending';
+import PagoFailure from './pages/PagoFailure';
 
 function App() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -55,6 +59,9 @@ function App() {
               <NavLink to="/" className={linkClass}>
                 Participantes
               </NavLink>
+              <NavLink to="/cursos" className={linkClass}>
+                Cursos
+              </NavLink>
               {user?.rol === 'ADMIN' && (
                 <NavLink to="/nuevo" className={linkClass}>
                   Nuevo participante
@@ -75,6 +82,9 @@ function App() {
             <div className="md:hidden grid gap-2 mt-4">
               <NavLink to="/" onClick={cerrarMenu} className={linkClass}>
                 Participantes
+              </NavLink>
+              <NavLink to="/cursos" onClick={cerrarMenu} className={linkClass}>
+                Cursos
               </NavLink>
               {user?.rol === 'ADMIN' && (
                 <NavLink to="/nuevo" onClick={cerrarMenu} className={linkClass}>
@@ -122,6 +132,10 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/cursos" element={<CursosPage />} />
+          <Route path="/pago/success" element={<PagoSuccess />} />
+          <Route path="/pago/pending" element={<PagoPending />} />
+          <Route path="/pago/failure" element={<PagoFailure />} />
         </Routes>
       </div>
     </div>

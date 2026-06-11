@@ -1,10 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from dotenv import load_dotenv
 import json
+import os
 from datetime import datetime, timedelta
 import jwt
+import mercadopago
+
+load_dotenv()
 
 import models
 from database import engine, SessionLocal
@@ -27,6 +33,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mercado Pago Configuration
+MERCADOPAGO_ACCESS_TOKEN = os.environ.get("MERCADOPAGO_ACCESS_TOKEN", "TEST-ACCESS-TOKEN")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+sdk = mercadopago.SDK(MERCADOPAGO_ACCESS_TOKEN)
 
 # Dependency para obtener la sesión de BD
 def get_db():
@@ -130,3 +142,96 @@ def delete_participante(participante_id: int, db: Session = Depends(get_db)):
     db.delete(db_participante)
     db.commit()
     return {"ok": True}
+
+
+# =============================================================================
+# Mercado Pago - Checkout Pro
+# =============================================================================
+
+class PreferenciaRequest(BaseModel):
+    title: str
+    unit_price: float
+    quantity: int = 1
+
+@app.post("/crear-preferencia")
+def crear_preferencia(data: PreferenciaRequest):
+    """
+    Crea una preferencia de pago en Mercado Pago y retorna la URL de Checkout Pro.
+    """
+    preference_data = {
+        "items": [
+            {
+                "title": data.title,
+                "quantity": data.quantity,
+                "unit_price": data.unit_price,
+                "currency_id": "ARS",
+            }
+        ],
+    }
+
+    # back_urls y auto_return solo funcionan con URLs públicas (no localhost)
+    # Con NGROK o en producción, habilitar redirects automáticos
+    if "localhost" not in FRONTEND_URL:
+        preference_data["back_urls"] = {
+            "success": f"{FRONTEND_URL}/pago/success",
+            "failure": f"{FRONTEND_URL}/pago/failure",
+            "pending": f"{FRONTEND_URL}/pago/pending",
+        }
+        preference_data["auto_return"] = "approved"
+
+    try:
+        result = sdk.preference().create(preference_data)
+
+        if result["status"] != 201:
+            print(f"[MercadoPago] Error {result['status']}: {result['response']}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message": "Error al crear la preferencia en Mercado Pago",
+                    "mp_status": result["status"],
+                    "mp_error": result["response"],
+                }
+            )
+
+        preference = result["response"]
+        print(f"[MercadoPago] Preferencia creada: {preference['id']}")
+        return {
+            "id": preference["id"],
+            "init_point": preference["init_point"],
+            "sandbox_init_point": preference["sandbox_init_point"],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[MercadoPago] Exception: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/webhook")
+async def webhook_mercadopago(request: Request):
+    """
+    Recibe notificaciones de pago de Mercado Pago.
+    Mercado Pago envía notificaciones cuando cambia el estado de un pago.
+    """
+    try:
+        body = await request.json()
+        print(f"[Webhook] Notificación recibida: {json.dumps(body, indent=2)}")
+
+        # Mercado Pago envía type="payment" para pagos
+        if body.get("type") == "payment":
+            payment_id = body.get("data", {}).get("id")
+            if payment_id:
+                # Consultar el estado del pago en Mercado Pago
+                payment_result = sdk.payment().get(payment_id)
+                if payment_result["status"] == 200:
+                    payment = payment_result["response"]
+                    print(f"[Webhook] Pago {payment_id}: status={payment.get('status')}")
+                else:
+                    print(f"[Webhook] Error consultando pago {payment_id}")
+
+        return {"status": "ok"}
+
+    except Exception as e:
+        print(f"[Webhook] Error procesando notificación: {e}")
+        return {"status": "error", "detail": str(e)}
