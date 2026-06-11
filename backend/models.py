@@ -18,11 +18,12 @@ class ParticipanteDB(Base):
     nivel = Column(String)
     aceptaTerminos = Column(Boolean)
 
+# SQLAlchemy Model - Usuarios
 class UsuarioDB(Base):
     __tablename__ = "usuarios_db"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index=True, unique=True)
+    username = Column(String, index=True)
     password = Column(String)
     rol = Column(String)
 
@@ -52,6 +53,7 @@ class ParticipanteResponse(ParticipanteCreate):
     class Config:
         from_attributes = True
 
+# Pydantic Schemas - Usuarios
 class UsuarioCreate(BaseModel):
     username: str
     password: str
@@ -63,6 +65,7 @@ class UsuarioResponse(UsuarioCreate):
     class Config:
         from_attributes = True
 
+# Pydantic Schemas - Auth
 class LoginRequest(BaseModel):
     username: str
     password: str

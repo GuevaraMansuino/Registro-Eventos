@@ -1,53 +1,60 @@
-import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { Participante } from '../models/Participante';
-import { ParticipantesContext } from '../context/ParticipantesContext';
-import { useAuth } from '../context/AuthProvider';
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import type { Participante } from "../models/Participante";
+import { ParticipantesContext } from "../context/ParticipantesContext";
+import { useAuth } from "../context/AuthProvider";
 
 interface ParticipanteCardProps {
   participante: Participante;
 }
 
-const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => {
+const ParticipanteCard: React.FC<ParticipanteCardProps> = ({
+  participante,
+}) => {
   const navigate = useNavigate();
   const ctx = useContext(ParticipantesContext);
-  if (!ctx) throw new Error('ParticipanteCard debe estar dentro de ParticipantesProvider');
+  if (!ctx)
+    throw new Error(
+      "ParticipanteCard debe estar dentro de ParticipantesProvider",
+    );
   const { eliminarParticipante, editarParticipante } = ctx;
   const { user } = useAuth();
 
   const getColorNivel = (nivel: string) => {
     switch (nivel) {
-      case 'Principiante':
-        return 'bg-green-50 border-green-300';
-      case 'Intermedio':
-        return 'bg-yellow-50 border-yellow-300';
-      case 'Avanzado':
-        return 'bg-red-50 border-red-300';
+      case "Principiante":
+        return "bg-green-50 border-green-300";
+      case "Intermedio":
+        return "bg-yellow-50 border-yellow-300";
+      case "Avanzado":
+        return "bg-red-50 border-red-300";
       default:
-        return 'bg-white';
+        return "bg-white";
     }
   };
 
   const getColorTextoNivel = (nivel: string) => {
     switch (nivel) {
-      case 'Principiante':
-        return 'text-green-700';
-      case 'Intermedio':
-        return 'text-yellow-700';
-      case 'Avanzado':
-        return 'text-red-700';
+      case "Principiante":
+        return "text-green-700";
+      case "Intermedio":
+        return "text-yellow-700";
+      case "Avanzado":
+        return "text-red-700";
       default:
-        return 'text-gray-700';
+        return "text-gray-700";
     }
   };
 
   return (
     <div
       className={`shadow-lg rounded-lg p-5 hover:shadow-2xl transition-all border-l-4 ${getColorNivel(
-        participante.nivel
+        participante.nivel,
       )} transform hover:-translate-y-1`}
     >
-      <h3 className="font-bold text-xl mb-1 text-gray-800">{participante.nombre}</h3>
+      <h3 className="font-bold text-xl mb-1 text-gray-800">
+        {participante.nombre}
+      </h3>
       <p className="text-gray-600 text-sm mb-3">📧 {participante.email}</p>
       <div className="space-y-2">
         <p className="text-gray-700 flex items-center gap-2">
@@ -56,7 +63,9 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
         <p className="text-gray-700 flex items-center gap-2">
           <span className="font-semibold">📍</span> {participante.modalidad}
         </p>
-        <p className={`font-bold flex items-center gap-2 ${getColorTextoNivel(participante.nivel)}`}>
+        <p
+          className={`font-bold flex items-center gap-2 ${getColorTextoNivel(participante.nivel)}`}
+        >
           <span>🎯</span> {participante.nivel}
         </p>
         <div className="mt-3 pt-3 border-t border-gray-200">
@@ -74,7 +83,7 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
         </div>
       </div>
 
-      {user?.rol === 'ADMIN' ? (
+      {user?.rol === "ADMIN" && (
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button
             onClick={() => {
@@ -92,7 +101,7 @@ const ParticipanteCard: React.FC<ParticipanteCardProps> = ({ participante }) => 
             Eliminar
           </button>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

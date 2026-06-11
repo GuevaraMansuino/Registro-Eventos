@@ -1,43 +1,54 @@
-import { useContext, useEffect, useReducer, useState, type ReactNode } from 'react';
-import { AuthContext } from './AuthContext';
-import { authReducer, initialAuthState } from '../reducers/authReducer';
-import { decodeToken, getToken, removeToken, setToken } from '../utils/auth';
+import {
+  useReducer,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { AuthContext, type AuthUser } from "./AuthContext";
+import { authReducer, initialAuthState } from "../reducers/authReducer";
+import { decodeToken, getToken, setToken, removeToken } from "../utils/auth";
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = "http://127.0.0.1:8000";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
   const [isRestoring, setIsRestoring] = useState(true);
 
+  // Restore session from localStorage on mount
   useEffect(() => {
     const token = getToken();
     if (token) {
       const user = decodeToken(token);
       if (user) {
-        dispatch({ type: 'LOGIN', payload: user });
+        dispatch({ type: "LOGIN", payload: user });
       } else {
-        removeToken();
+        removeToken(); // Expired or invalid token
       }
     }
     setIsRestoring(false);
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
     try {
       const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) return false;
 
-      const data: { access_token: string } = await response.json();
+      const data = await response.json();
+      setToken(data.access_token);
+
       const user = decodeToken(data.access_token);
       if (!user) return false;
 
-      setToken(data.access_token);
-      dispatch({ type: 'LOGIN', payload: user });
+      dispatch({ type: "LOGIN", payload: user });
       return true;
     } catch {
       return false;
@@ -46,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     removeToken();
-    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: "LOGOUT" });
   };
 
   return (
@@ -58,6 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 }

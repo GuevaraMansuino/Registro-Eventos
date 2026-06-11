@@ -1,8 +1,9 @@
-import type { AuthState, AuthUser } from '../context/AuthContext';
+import type { AuthState, AuthUser } from "../context/AuthContext";
+import type { UserRole } from "../context/AuthContext";
 
 export type AuthAction =
-  | { type: 'LOGIN'; payload: AuthUser }
-  | { type: 'LOGOUT' };
+  | { type: "LOGIN"; payload: AuthUser }
+  | { type: "LOGOUT" };
 
 export const initialAuthState: AuthState = {
   user: null,
@@ -11,12 +12,12 @@ export const initialAuthState: AuthState = {
 
 export function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
-    case 'LOGIN':
+    case "LOGIN":
       return {
         user: action.payload,
         isAuthenticated: true,
       };
-    case 'LOGOUT':
+    case "LOGOUT":
       return {
         user: null,
         isAuthenticated: false,

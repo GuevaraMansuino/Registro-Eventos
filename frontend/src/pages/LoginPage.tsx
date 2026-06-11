@@ -1,23 +1,24 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthProvider';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthProvider";
 
 export default function LoginPage() {
   const { isRestoring, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
+  // Redirect to home if already authenticated
   useEffect(() => {
     if (!isRestoring && isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [isRestoring, isAuthenticated, navigate]);
 
   if (isRestoring) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <p className="text-gray-500 text-lg">Cargando...</p>
       </div>
     );
@@ -25,26 +26,29 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     const success = await login(username, password);
     if (success) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } else {
-      setError('Credenciales inválidas');
+      setError("Credenciales inválidas");
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
           Iniciar Sesión
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-1">
+            <label
+              htmlFor="username"
+              className="block text-sm font-semibold text-gray-700 mb-1"
+            >
               Usuario
             </label>
             <input
@@ -59,7 +63,10 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-gray-700 mb-1"
+            >
               Password
             </label>
             <input
@@ -73,11 +80,11 @@ export default function LoginPage() {
             />
           </div>
 
-          {error ? (
+          {error && (
             <p className="text-red-600 text-sm font-semibold bg-red-50 px-4 py-2 rounded-lg border border-red-200">
               {error}
             </p>
-          ) : null}
+          )}
 
           <button
             type="submit"
