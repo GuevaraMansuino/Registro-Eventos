@@ -1,5 +1,4 @@
 import type { AuthState, AuthUser } from "../context/AuthContext";
-import type { UserRole } from "../context/AuthContext";
 
 export type AuthAction =
   | { type: "LOGIN"; payload: AuthUser }
