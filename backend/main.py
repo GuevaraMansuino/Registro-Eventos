@@ -25,7 +25,6 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 security = HTTPBearer()
 
-# Configurar CORS para permitir peticiones desde React (ej. localhost:5173)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # En producción cambiar a los dominios específicos
@@ -34,7 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mercado Pago Configuration
 MERCADOPAGO_ACCESS_TOKEN = os.environ.get("MERCADOPAGO_ACCESS_TOKEN", "TEST-ACCESS-TOKEN")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
@@ -144,11 +142,9 @@ def delete_participante(participante_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 
-# =============================================================================
-# Mercado Pago - Checkout Pro
-# =============================================================================
 
 class PreferenciaRequest(BaseModel):
+    id_curso: str
     title: str
     unit_price: float
     quantity: int = 1
@@ -166,11 +162,10 @@ def crear_preferencia(data: PreferenciaRequest):
                 "unit_price": data.unit_price,
                 "currency_id": "ARS",
             }
-        ],
+        ],"external_reference": data.id_curso,
     }
 
-    # back_urls y auto_return solo funcionan con URLs públicas (no localhost)
-    # Con NGROK o en producción, habilitar redirects automáticos
+
     if "localhost" not in FRONTEND_URL:
         preference_data["back_urls"] = {
             "success": f"{FRONTEND_URL}/pago/success",
@@ -207,6 +202,36 @@ def crear_preferencia(data: PreferenciaRequest):
         print(f"[MercadoPago] Exception: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/pago-info/{payment_id}")
+def obtener_informacion_pago(payment_id: int):
+    """
+    Consulta a Mercado Pago los detalles de un pago realizado para mostrarlos en el frontend.
+    """
+    try:
+        payment_result = sdk.payment().get(payment_id)
+
+        if payment_result["status"] != 200:
+            raise HTTPException(status_code=404, detail="Pago no encontrado")
+
+        payment = payment_result["response"]
+
+        items = payment.get("additional_info", {}).get("items", [])
+
+        return {
+            "id_pago": payment["id"],
+            "estado": payment["status"],             
+            "monto_total": payment["transaction_amount"],
+            "moneda": payment["currency_id"],
+            "metodo_pago": payment["payment_type_id"],
+            "fecha_aprobacion": payment.get("date_approved"),
+            "items": items   
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[MercadoPago] Error consultando pago: {e}")
+        raise HTTPException(status_code=500, detail="Error al consultar el pago")
 
 @app.post("/webhook")
 async def webhook_mercadopago(request: Request):
@@ -218,11 +243,9 @@ async def webhook_mercadopago(request: Request):
         body = await request.json()
         print(f"[Webhook] Notificación recibida: {json.dumps(body, indent=2)}")
 
-        # Mercado Pago envía type="payment" para pagos
         if body.get("type") == "payment":
             payment_id = body.get("data", {}).get("id")
             if payment_id:
-                # Consultar el estado del pago en Mercado Pago
                 payment_result = sdk.payment().get(payment_id)
                 if payment_result["status"] == 200:
                     payment = payment_result["response"]

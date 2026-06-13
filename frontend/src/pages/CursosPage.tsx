@@ -75,6 +75,7 @@ export default function CursosPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id_curso: curso.id.toString(), 
           title: curso.titulo,
           unit_price: curso.precio,
           quantity: 1,
